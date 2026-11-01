@@ -16,36 +16,27 @@ export default function CreatorPage({ user, onSignIn, params }: PageProps) {
   const [bio, setBio] = useState("");
 
   useEffect(() => {
-    if (c) {
-      const desc = c.bio || (c.games?.length
-        ? `${c.name} makes games on start.ng: ${c.games.slice(0, 5).map((g) => g.title).join(", ")}. Play them free in your browser.`
-        : `${c.name}'s games on start.ng: play them free in your browser, follow them, and share.`);
-      setSeo({
-        title: `${c.name}'s games · start.ng`,
-        description: desc,
-        path: `/by/${c.slug}`,
-      });
-      if (location.pathname !== `/by/${c.slug}`) history.replaceState(null, "", `/by/${c.slug}`);
-    } else if (c === null) {
-      setSeo({
-        ...PAGES.notFound,
-        title: "No creator here · start.ng",
-        description: "There's no creator at this address.",
-        path: location.pathname,
-      });
-    }
-  }, [c]);
-  useEffect(() => {
     let live = true;
     setError("");
     getCreator(id)
       .then((got) => {
         if (!live) return;
         setC(got);
-        document.title = `${got.name}'s games · start.ng`;
+        setSeo({
+          ...PAGES.creator,
+          title: `${got.name}'s games · start.ng`,
+          description: got.bio || PAGES.creator.description,
+          path: `/by/${got.slug}`,
+        });
         if (location.pathname !== `/by/${got.slug}`) history.replaceState(null, "", `/by/${got.slug}`);
       })
-      .catch((e) => live && (e instanceof Error && /No creator/.test(e.message) ? setC(null) : setError("Couldn't load this page. Try again in a moment.")));
+      .catch((e) => {
+        if (!live) return;
+        if (e instanceof Error && /No creator/.test(e.message)) {
+          setC(null);
+          setSeo({ ...PAGES.notFound, title: "No creator here · start.ng", path: location.pathname });
+        } else setError("Couldn't load this page. Try again in a moment.");
+      });
     return () => { live = false; };
   }, [id, user?.id]);
 
