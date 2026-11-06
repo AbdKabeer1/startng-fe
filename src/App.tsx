@@ -7,6 +7,7 @@ import { analytics } from "./analytics";
 import Favorites, { FavoriteButton, gameKey, useFavorites } from "./Favorites";
 import Pagination from "./Pagination";
 import GameCard from "./GameCard";
+import GamesDice from "./GamesDice";
 import type { FeaturePage } from "./features/registry";
 import GamePage from "./GamePage";
 import IndiePage from "./IndiePage";
@@ -91,6 +92,16 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
   // Published games from the API; null while loading.
   const [games, setGames] = useState<Game[] | null>(null);
   const [approval, setApproval] = useState<Approval | null>(approveCode ? { step: "loading" } : null);
+  // The game a dice tile rolled out (the rolling games grid on /games).
+  const [dice, setDice] = useState<Game | null>(null);
+
+  // Escape puts the rolled-out card away, like any dialog.
+  useEffect(() => {
+    if (!dice) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDice(null); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [dice]);
   // The game whose shared leaderboard is open, if any.
   const [board, setBoard] = useState<Game | null>(null);
   // The signed-in builder's newest game, for the example address in the hero.
@@ -249,6 +260,11 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
     }
     e.preventDefault();
     setChosen(g);
+  }
+
+  // A dice tile was clicked: roll that game out as its card (the rolling grid).
+  function rollOutDice(g: Game) {
+    setDice(g);
   }
 
   // A card opens the game's page on start.ng first (its details, leaderboard and Play button), so the page
@@ -453,15 +469,19 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
               No games match “{q.trim()}”. <button type="button" className="link" onClick={() => search("")}>Clear search</button>
             </p>
           )}
-          <div className="grid" aria-busy={games === null}>
-            {shown.map((g) => (
-              <GameCard key={g.slug} game={g} legendary={g.slug === HANGOUT.slug} link={cardLink(g)} user={user} onSignIn={() => setSignInOpen(true)}
-                favorite={<FavoriteButton user={user} on={favs.has(gameKey(g))} name={g.title} onToggle={() => favs.toggle(gameKey(g))} onSignIn={() => setSignInOpen(true)} />}
-                board={g.board && <button type="button" className="link board-btn" onClick={() => setBoard(g)}>Leaderboard</button>}
-                play={<a className="play" {...cardLink(g)}>{isInAppGame(g) ? "Play" : "View"}</a>} />
-            ))}
-            {games === null && <SkeletonCards count={Math.max(0, (allGames ? 8 : HOME_GAMES) - shown.length)} />}
-          </div>
+          {allGames && !searching && !filters.active && shown.length > 0 ? (
+            <GamesDice games={shown} onPick={rollOutDice} linkFor={cardLink} rolledOut={dice !== null} />
+          ) : (
+            <div className="grid" aria-busy={games === null}>
+              {shown.map((g) => (
+                <GameCard key={g.slug} game={g} legendary={g.slug === HANGOUT.slug} link={cardLink(g)} user={user} onSignIn={() => setSignInOpen(true)}
+                  favorite={<FavoriteButton user={user} on={favs.has(gameKey(g))} name={g.title} onToggle={() => favs.toggle(gameKey(g))} onSignIn={() => setSignInOpen(true)} />}
+                  board={g.board && <button type="button" className="link board-btn" onClick={() => setBoard(g)}>Leaderboard</button>}
+                  play={<a className="play" {...cardLink(g)}>{isInAppGame(g) ? "Play" : "View"}</a>} />
+              ))}
+              {games === null && <SkeletonCards count={Math.max(0, (allGames ? 8 : HOME_GAMES) - shown.length)} />}
+            </div>
+          )}
           {allGames ? (
             <Pagination page={current} pages={pages} onPage={goToPage} hrefFor={(n) => urlFor("/games", q, n)} />
           ) : (
@@ -594,6 +614,28 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
         <Suspense fallback={null}>
           <GameBoard game={board} playerId={user?.id ?? null} onClose={() => setBoard(null)} />
         </Suspense>
+      )}
+
+      {dice && (
+        <div className="overlay" onClick={() => setDice(null)}>
+          <div className="dice-card" role="dialog" aria-modal="true" aria-labelledby="dice-title" onClick={(e) => e.stopPropagation()}>
+            <div className="card-head">
+              <h3 id="dice-title">{dice.title}</h3>
+              <button type="button" className="link close" aria-label="Close" onClick={() => setDice(null)}>✕</button>
+            </div>
+            <GameCard
+              game={dice}
+              legendary={dice.slug === HANGOUT.slug}
+              link={cardLink(dice)}
+              user={user}
+              onSignIn={() => setSignInOpen(true)}
+              favorite={<FavoriteButton user={user} on={favs.has(gameKey(dice))} name={dice.title} onToggle={() => favs.toggle(gameKey(dice))} onSignIn={() => setSignInOpen(true)} />}
+              board={dice.board && <button type="button" className="link board-btn" onClick={() => setBoard(dice)}>Leaderboard</button>}
+              play={<a className="play" {...cardLink(dice)}>{isInAppGame(dice) ? "Play" : "View"}</a>}
+            />
+            <button type="button" className="link" onClick={() => setDice(null)}>Close</button>
+          </div>
+        </div>
       )}
 
       {chosen && !user && (
