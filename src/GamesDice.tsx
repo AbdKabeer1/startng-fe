@@ -99,14 +99,14 @@ export default function GamesDice({
         type="button"
         className="dice-hub"
         onClick={scatter}
-        aria-label="Scatter the games back into a grid"
-        title="Scatter the games back into a grid"
+        aria-label="Roll the games back up"
+        title="Roll the games back up"
       >
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M8 12H3M21 12h-5M12 8V3M12 21v-5" />
           <path d="m6.3 6.3-3.5-3.5M17.7 6.3l3.5-3.5M6.3 17.7l-3.5 3.5M17.7 17.7l3.5 3.5" />
         </svg>
-        <span aria-hidden="true">Scatter</span>
+        <span aria-hidden="true">Roll</span>
       </button>
     </div>
   );

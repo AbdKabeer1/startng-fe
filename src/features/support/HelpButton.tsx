@@ -84,19 +84,27 @@ export default function HelpButton({ user, onSignIn }: PagePartProps) {
   }
 
   const results = search(sections, q);
+  // The FAQ list shown before anyone types: game pages first, then the rest of the docs.
+  const faq = [...sections]
+    .sort((a, b) => Number(/game page/i.test(b.title)) - Number(/game page/i.test(a.title)))
+    .slice(0, 6);
   return (
     <>
       <button type="button" className="help-button" aria-expanded={open} aria-controls="help-panel" onClick={() => setOpen((o) => !o)}>
-        <span aria-hidden="true">?</span> Help
+        <span className="help-badge" aria-hidden="true">FAQ</span>
+        <span>Help</span>
       </button>
       {open && (
         <div id="help-panel" className="help-panel" role="dialog" aria-label="Help" ref={panel}>
           <div className="help-head">
-            <b>Help</b>
+            <div>
+              <b>Frequently asked questions</b>
+              <p className="help-kicker">Answers about start.ng, and a way to tell us what broke.</p>
+            </div>
             <button type="button" className="help-close" aria-label="Close" onClick={() => setOpen(false)}>×</button>
           </div>
           <div className="segmented help-tabs" role="tablist">
-            <button type="button" role="tab" aria-selected={tab === "search"} className={tab === "search" ? "on" : ""} onClick={() => setTab("search")}>Find an answer</button>
+            <button type="button" role="tab" aria-selected={tab === "search"} className={tab === "search" ? "on" : ""} onClick={() => setTab("search")}>FAQ</button>
             <button type="button" role="tab" aria-selected={tab === "report"} className={tab === "report" ? "on" : ""} onClick={() => setTab("report")}>Report a problem</button>
           </div>
 
@@ -104,15 +112,29 @@ export default function HelpButton({ user, onSignIn }: PagePartProps) {
             <div className="help-body">
               <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. how do I publish a game?" aria-label="Search the docs" autoFocus />
               {q.trim() && results.length === 0 && <p className="note">Nothing in the docs matches. Try other words, or report a problem.</p>}
-              <ul className="help-results">
-                {results.map((r) => (
-                  <li key={r.anchor}>
-                    <a href={`/docs#${r.anchor}`}>{r.title}</a>
-                    {r.snippet && <p>{r.snippet}…</p>}
-                  </li>
-                ))}
-              </ul>
-              {!q.trim() && <p className="note">Search start.ng's docs, or read them all at <a href="/docs">start.ng/docs</a>.</p>}
+              {q.trim() ? (
+                <ul className="help-results">
+                  {results.map((r) => (
+                    <li key={r.anchor}>
+                      <a href={`/docs#${r.anchor}`}>{r.title}</a>
+                      {r.snippet && <p>{r.snippet}…</p>}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="help-faq">
+                  {faq.map((f) => (
+                    <li key={f.anchor}>
+                      <a href={`/docs#${f.anchor}`}>
+                        <span>{f.title}</span>
+                        <i aria-hidden="true">→</i>
+                      </a>
+                    </li>
+                  ))}
+                  {sections.length === 0 && <li className="help-faq-empty">Loading the questions…</li>}
+                </ul>
+              )}
+              <p className="note">Every answer lives in <a href="/docs">start.ng/docs</a>. Missing something? Report a problem.</p>
             </div>
           ) : !user ? (
             <div className="help-body">

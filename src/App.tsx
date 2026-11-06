@@ -419,9 +419,9 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
         <section className="container hero">
           <p className="eyebrow">Big imagination. Played everywhere.</p>
           <h1>
-            Good <span key={flip ? "games" : "vibes"} className="roll-word">{flip ? "games" : "vibes"}</span>.
+            Good <mark className="swap"><span key={flip ? "games" : "vibes"} className="swap-word">{flip ? "games" : "vibes"}</span></mark>.
             <br />
-            <mark>Good <span key={flip ? "vibes" : "games"} className="roll-word">{flip ? "vibes" : "games"}</span>.</mark>
+            Good <mark className="swap"><span key={flip ? "vibes" : "games"} className="swap-word">{flip ? "vibes" : "games"}</span></mark>.
           </h1>
           <p className="lead">
             Games made by builders in the community.{" "}<br />
@@ -464,20 +464,30 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
                     : `${cards.length} ${cards.length === 1 ? "game" : "games"}`}
                 </span>
               )}
-              {!searching && !filters.active && shown.length > 0 && (
-                <button
-                  type="button"
-                  className="ball-btn"
-                  onClick={() => setBall((was) => !was)}
-                  aria-label={ball ? "Scatter the games back into a grid" : "Gather all the games into one ball"}
-                  title={ball ? "Scatter the games back into a grid" : "Gather all the games into one ball"}
-                >
-                  <span aria-hidden="true">{ball ? "✕" : "◉"}</span>
-                </button>
-              )}
             </div>
           )}
           {allGames && <PageParts page="games" user={user} onSignIn={() => setSignInOpen(true)} query={q.trim()} />}
+          {allGames && !searching && !filters.active && (
+            <div className="roll-row">
+              <button
+                type="button"
+                className={ball ? "roll-ball on" : "roll-ball"}
+                onClick={() => setBall((was) => !was)}
+                aria-expanded={ball}
+                aria-controls="games-view"
+                aria-label={ball ? "Roll the games back up" : "Roll out all the games"}
+                title={ball ? "Roll the games back up" : "Roll out all the games"}
+              >
+                <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
+                  <circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none" />
+                  <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none" />
+                  <circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none" />
+                </svg>
+                <span>Roll</span>
+              </button>
+            </div>
+          )}
           {allGames && <FilterBar filters={filters} />}
           {games && filters.active && !searching && cards.length === 0 && (
             <p className="empty">
@@ -494,14 +504,17 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
               No games match “{q.trim()}”. <button type="button" className="link" onClick={() => search("")}>Clear search</button>
             </p>
           )}
-          {allGames && !searching && !filters.active && shown.length > 0 && ball ? (
-            <GamesDice
-              games={shown}
-              onPick={rollOutDice}
-              linkFor={cardLink}
-              rolledOut={dice !== null}
-              onScatter={() => setBall(false)}
-            />
+          <div id="games-view">
+          {allGames && !searching && !filters.active ? (
+            shown.length > 0 && ball ? (
+              <GamesDice
+                games={shown}
+                onPick={rollOutDice}
+                linkFor={cardLink}
+                rolledOut={dice !== null}
+                onScatter={() => setBall(false)}
+              />
+            ) : null
           ) : (
             <div className="grid" aria-busy={games === null}>
               {shown.map((g) => (
@@ -513,9 +526,10 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
               {games === null && <SkeletonCards count={Math.max(0, (allGames ? 8 : HOME_GAMES) - shown.length)} />}
             </div>
           )}
-          {allGames ? (
+          </div>
+          {allGames && (ball || searching || filters.active) ? (
             <Pagination page={current} pages={pages} onPage={goToPage} hrefFor={(n) => urlFor("/games", q, n)} />
-          ) : (
+          ) : !allGames && (
             cards.length > HOME_GAMES && (
               <div className="see-all">
                 <a className="btn" href="/games">See all {cards.length} games →</a>
