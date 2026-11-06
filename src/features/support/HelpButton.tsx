@@ -102,7 +102,7 @@ export default function HelpButton({ user, onSignIn }: PagePartProps) {
     <>
       <button type="button" className="help-button" aria-expanded={open} aria-controls="help-panel" onClick={() => setOpen((o) => !o)}>
         <span className="help-badge" aria-hidden="true"><GamepadIcon /></span>
-        <span>FAQ Help</span>
+        <span>Help</span>
       </button>
       {open && (
         <div id="help-panel" className="help-panel" role="dialog" aria-label="Help" ref={panel}>
@@ -110,14 +110,14 @@ export default function HelpButton({ user, onSignIn }: PagePartProps) {
             <div className="help-head-main">
               <span className="help-pad" aria-hidden="true"><GamepadIcon size={20} /></span>
               <div>
-                <b>Frequently asked questions</b>
+                <b>Help</b>
                 <p className="help-kicker">Answers about start.ng, and a way to tell us what broke.</p>
               </div>
             </div>
             <button type="button" className="help-close" aria-label="Close" onClick={() => setOpen(false)}>×</button>
           </div>
           <div className="segmented help-tabs" role="tablist">
-            <button type="button" role="tab" aria-selected={tab === "search"} className={tab === "search" ? "on" : ""} onClick={() => setTab("search")}>FAQ</button>
+            <button type="button" role="tab" aria-selected={tab === "search"} className={tab === "search" ? "on" : ""} onClick={() => setTab("search")}>Answers</button>
             <button type="button" role="tab" aria-selected={tab === "report"} className={tab === "report" ? "on" : ""} onClick={() => setTab("report")}>Report a problem</button>
           </div>
 
