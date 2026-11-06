@@ -8,6 +8,16 @@ import "./support.css";
 // a problem with start.ng itself. AI answers from the docs come later.
 
 type Section = { title: string; anchor: string; text: string };
+
+/** The FAQ's gamepad mark: help about games, not a question-mark button. */
+function GamepadIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7.6 8h8.8a4.4 4.4 0 0 1 4.3 5.3l-.6 2.7a2.3 2.3 0 0 1-4 1L14.7 15H9.3l-1.4 2a2.3 2.3 0 0 1-4-1l-.6-2.7A4.4 4.4 0 0 1 7.6 8Z" />
+      <path d="M8 11.2v2M7 12.2h2M15.6 11.6h.01M17.6 13.2h.01" />
+    </svg>
+  );
+}
 let docs: Promise<Section[]> | null = null;
 
 /** The docs split into their sections (## and ### headings), fetched once. */
@@ -91,15 +101,18 @@ export default function HelpButton({ user, onSignIn }: PagePartProps) {
   return (
     <>
       <button type="button" className="help-button" aria-expanded={open} aria-controls="help-panel" onClick={() => setOpen((o) => !o)}>
-        <span className="help-badge" aria-hidden="true">FAQ</span>
-        <span>Help</span>
+        <span className="help-badge" aria-hidden="true"><GamepadIcon /></span>
+        <span>FAQ Help</span>
       </button>
       {open && (
         <div id="help-panel" className="help-panel" role="dialog" aria-label="Help" ref={panel}>
           <div className="help-head">
-            <div>
-              <b>Frequently asked questions</b>
-              <p className="help-kicker">Answers about start.ng, and a way to tell us what broke.</p>
+            <div className="help-head-main">
+              <span className="help-pad" aria-hidden="true"><GamepadIcon size={20} /></span>
+              <div>
+                <b>Frequently asked questions</b>
+                <p className="help-kicker">Answers about start.ng, and a way to tell us what broke.</p>
+              </div>
             </div>
             <button type="button" className="help-close" aria-label="Close" onClick={() => setOpen(false)}>×</button>
           </div>

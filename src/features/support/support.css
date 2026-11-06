@@ -5,7 +5,9 @@
   font-weight: 800; box-shadow: 4px 4px 0 var(--ink); transition: transform .15s, box-shadow .15s;
 }
 .help-button:hover, .help-button:focus-visible { transform: translateY(-2px); box-shadow: 6px 7px 0 var(--ink); background: var(--lime); outline: none; }
-.help-badge { display: grid; place-items: center; min-width: 34px; height: 28px; padding: 0 7px; border-radius: 999px; background: var(--ink); color: var(--lime); font: 800 .7rem var(--mono); letter-spacing: .08em; }
+.help-badge { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--lime); }
+.help-head-main { display: flex; align-items: flex-start; gap: 10px; }
+.help-pad { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--ink); background: var(--lime); color: var(--on-lime); }
 .help-panel {
   position: fixed; left: 20px; bottom: 76px; z-index: 30; width: min(400px, calc(100vw - 32px)); max-height: min(620px, calc(100vh - 110px));
   overflow-y: auto; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px 16px;
