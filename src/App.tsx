@@ -94,6 +94,16 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
   const [approval, setApproval] = useState<Approval | null>(approveCode ? { step: "loading" } : null);
   // The game a dice tile rolled out (the rolling games grid on /games).
   const [dice, setDice] = useState<Game | null>(null);
+  // /games: whether the visitor gathered the games into one ball.
+  const [ball, setBall] = useState(false);
+  // Home: "Good vibes. / Good games." swaps its last words every two seconds.
+  const [flip, setFlip] = useState(false);
+
+  useEffect(() => {
+    if (view !== "home") return;
+    const id = window.setInterval(() => setFlip((f) => !f), 2000);
+    return () => window.clearInterval(id);
+  }, [view]);
 
   // Escape puts the rolled-out card away, like any dialog.
   useEffect(() => {
@@ -408,7 +418,11 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
         {view === "home" && (
         <section className="container hero">
           <p className="eyebrow">Big imagination. Played everywhere.</p>
-          <h1>Good vibes.<br /><mark>Good games.</mark></h1>
+          <h1>
+            Good <span key={flip ? "games" : "vibes"} className="roll-word">{flip ? "games" : "vibes"}</span>.
+            <br />
+            <mark>Good <span key={flip ? "vibes" : "games"} className="roll-word">{flip ? "vibes" : "games"}</span>.</mark>
+          </h1>
           <p className="lead">
             Games made by builders in the community.{" "}<br />
             {example ? (
@@ -450,6 +464,17 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
                     : `${cards.length} ${cards.length === 1 ? "game" : "games"}`}
                 </span>
               )}
+              {!searching && !filters.active && shown.length > 0 && (
+                <button
+                  type="button"
+                  className="ball-btn"
+                  onClick={() => setBall((was) => !was)}
+                  aria-label={ball ? "Scatter the games back into a grid" : "Gather all the games into one ball"}
+                  title={ball ? "Scatter the games back into a grid" : "Gather all the games into one ball"}
+                >
+                  <span aria-hidden="true">{ball ? "✕" : "◉"}</span>
+                </button>
+              )}
             </div>
           )}
           {allGames && <PageParts page="games" user={user} onSignIn={() => setSignInOpen(true)} query={q.trim()} />}
@@ -469,8 +494,14 @@ export default function App({ view = "home", gameName, indieId, featurePage }: {
               No games match “{q.trim()}”. <button type="button" className="link" onClick={() => search("")}>Clear search</button>
             </p>
           )}
-          {allGames && !searching && !filters.active && shown.length > 0 ? (
-            <GamesDice games={shown} onPick={rollOutDice} linkFor={cardLink} rolledOut={dice !== null} />
+          {allGames && !searching && !filters.active && shown.length > 0 && ball ? (
+            <GamesDice
+              games={shown}
+              onPick={rollOutDice}
+              linkFor={cardLink}
+              rolledOut={dice !== null}
+              onScatter={() => setBall(false)}
+            />
           ) : (
             <div className="grid" aria-busy={games === null}>
               {shown.map((g) => (

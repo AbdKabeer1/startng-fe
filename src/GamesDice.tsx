@@ -19,12 +19,15 @@ export default function GamesDice({
   onPick,
   linkFor,
   rolledOut,
+  onScatter,
 }: {
   games: Game[];
   onPick: (g: Game) => void;
   linkFor: (g: Game) => { href: string; onClick?: (e: React.MouseEvent) => void };
   /** True while a game's card is open; the die gathers again when it closes. */
   rolledOut: boolean;
+  /** The middle ball was pressed: scatter the games back into the grid. */
+  onScatter: () => void;
 }) {
   const [scattered, setScattered] = useState(false);
   const timer = useRef<number | null>(null);
@@ -41,11 +44,18 @@ export default function GamesDice({
     timer.current = window.setTimeout(() => onPick(g), ROLL_MS);
   }
 
+  // The middle ball: throw every tile outward, then show the normal grid again.
+  function scatter() {
+    setScattered(true);
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(onScatter, ROLL_MS);
+  }
+
   return (
     <div className={scattered ? "dice scattered" : "dice"}>
       {games.map((g, i) => {
         const angle = i * GOLDEN_ANGLE;
-        const radius = 42 * Math.sqrt((i + 0.5) / games.length);
+        const radius = 15 + 27 * Math.sqrt((i + 0.5) / games.length);
         const x = 50 + radius * Math.cos(angle);
         const y = 50 + radius * Math.sin(angle);
         const link = linkFor(g);
@@ -85,6 +95,19 @@ export default function GamesDice({
           </a>
         );
       })}
+      <button
+        type="button"
+        className="dice-hub"
+        onClick={scatter}
+        aria-label="Scatter the games back into a grid"
+        title="Scatter the games back into a grid"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 12H3M21 12h-5M12 8V3M12 21v-5" />
+          <path d="m6.3 6.3-3.5-3.5M17.7 6.3l3.5-3.5M6.3 17.7l-3.5 3.5M17.7 17.7l3.5 3.5" />
+        </svg>
+        <span aria-hidden="true">Scatter</span>
+      </button>
     </div>
   );
 }
